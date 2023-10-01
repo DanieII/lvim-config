@@ -12,6 +12,8 @@ lvim.plugins = {
   "rebelot/kanagawa.nvim",
 }
 
+local lspconfig = require('lspconfig')
+
 -- Testing and Debugging
 lvim.builtin.dap.active = true
 local mason_path = vim.fn.glob(vim.fn.stdpath "data" .. "/mason/")
@@ -76,16 +78,32 @@ formatters.setup {
   { name = "djlint" },
 }
 lvim.format_on_save.enabled = true
-require 'lspconfig'.tailwindcss.setup {}
+lspconfig.tailwindcss.setup {}
 
 local linters = require "lvim.lsp.null-ls.linters"
-linters.setup { { command = "flake8", filetypes = { "python" } } }
+linters.setup { { command = "flake8", filetypes = { "python" } }, { command = "eslint", filetypes = { "javascript" } } }
 
+-- Emmet
+local configs = require('lspconfig/configs')
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.textDocument.completion.completionItem.snippetSupport = true
 
--- Switching Between Tabs
+lspconfig.emmet_ls.setup({
+  capabilities = capabilities,
+  filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "svelte", "pug",
+    "typescriptreact", "vue" },
+  init_options = {
+    html = {
+      options = {
+        ["bem.enabled"] = true,
+      },
+    },
+  }
+})
+
+-- Switching Between Buffers
 lvim.keys.normal_mode["L"] = ":bnext<cr>"
 lvim.keys.normal_mode["H"] = ":bprev<cr>"
-
 
 vim.list_extend(lvim.lsp.automatic_configuration.skipped_servers, { "html" })
 local opts = {
