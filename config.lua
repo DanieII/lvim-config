@@ -6,34 +6,53 @@
 lvim.colorscheme = "kanagawa-dragon"
 
 lvim.plugins = {
+  "rebelot/kanagawa.nvim",
+  "mfussenegger/nvim-dap",
   "mfussenegger/nvim-dap-python",
   "nvim-neotest/neotest",
   "nvim-neotest/neotest-python",
-  "rebelot/kanagawa.nvim",
+  "mxsdev/nvim-dap-vscode-js",
 }
 
 local lspconfig = require('lspconfig')
 
 -- Testing and Debugging
+local dap = require('dap')
 lvim.builtin.dap.active = true
+
+local mason_path = vim.fn.glob(vim.fn.stdpath "data" .. "/mason/")
+require("dap-vscode-js").setup {
+  node_path = "node",
+  debugger_path = vim.fn.stdpath "data" .. "/mason/packages/js-debug-adapter",
+  debugger_cmd = { "js-debug-adapter" },
+  adapters = { "pwa-node", "pwa-chrome", "pwa-msedge", "node-terminal", "pwa-extensionHost" },
+}
+
+dap.adapters.node2 = {
+  type = "executable",
+  command = "node",
+  args = { vim.fn.stdpath "data" .. "/mason/packages/node-debug2-adapter/out/src/nodeDebug.js" }
+}
+
+dap.configurations.javascript = {
+  {
+    name = 'Launch',
+    type = 'node2',
+    request = 'launch',
+    program = '${file}',
+    cwd = vim.loop.cwd(),
+    sourceMaps = true,
+    protocol = 'inspector',
+    console = 'integratedTerminal',
+  },
+}
+
 local mason_path = vim.fn.glob(vim.fn.stdpath "data" .. "/mason/")
 pcall(function()
   require("dap-python").setup(mason_path .. "packages/debugpy/venv/bin/python")
 end)
 
 -- Debug Django
-local dap = require('dap')
-
-dap.configurations.python = {
-  {
-    type = 'python',
-    request = 'launch',
-    name = "Launch file",
-    program = "${file}",
-    pythonPath = "/Library/Frameworks/Python.framework/Versions/3.11/bin/python3", -- Actual Python Path
-  },
-}
-
 table.insert(dap.configurations.python, {
   type = 'python',
   request = 'launch',
@@ -41,7 +60,6 @@ table.insert(dap.configurations.python, {
   program = vim.fn.getcwd() .. '/manage.py',
   args = { 'runserver', '--noreload' },
 })
-
 
 require("neotest").setup({
   adapters = {
@@ -73,15 +91,16 @@ lvim.builtin.treesitter.ensure_installed = {
 -- Formatters and Linters
 local formatters = require "lvim.lsp.null-ls.formatters"
 formatters.setup {
-  { name = "black" },
+  { name = "black",   args = { "--line-length", "150" } },
   { name = "prettier" },
   { name = "djlint" },
+
 }
 lvim.format_on_save.enabled = true
 lspconfig.tailwindcss.setup {}
 
 local linters = require "lvim.lsp.null-ls.linters"
-linters.setup { { command = "flake8", filetypes = { "python" } }, { command = "eslint", filetypes = { "javascript" } } }
+linters.setup { { command = "eslint", filetypes = { "javascript" } } }
 
 -- Emmet
 local configs = require('lspconfig/configs')
@@ -90,7 +109,8 @@ capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 lspconfig.emmet_ls.setup({
   capabilities = capabilities,
-  filetypes = { "css", "eruby", "html", "javascript", "javascriptreact", "less", "sass", "scss", "svelte", "pug",
+  filetypes = { "css", "eruby", "html", "htmldjango", "javascript", "javascriptreact", "less", "sass", "scss", "svelte",
+    "pug",
     "typescriptreact", "vue" },
   init_options = {
     html = {
