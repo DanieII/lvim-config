@@ -3,6 +3,7 @@
 -- Forum: https://www.reddit.com/r/lunarvim/
 -- Discord: https://discord.com/invite/Xb9B4Ny
 
+
 lvim.colorscheme = "kanagawa-dragon"
 
 lvim.plugins = {
@@ -15,15 +16,22 @@ lvim.plugins = {
 }
 
 local lspconfig = require('lspconfig')
+local mason_path = vim.fn.glob(vim.fn.stdpath "data" .. "/mason/")
 
 -- Testing and Debugging
 local dap = require('dap')
 lvim.builtin.dap.active = true
 
-local mason_path = vim.fn.glob(vim.fn.stdpath "data" .. "/mason/")
+vim.keymap.set('n', '<F5>', require 'dap'.continue)
+vim.keymap.set('n', '<F6>', require 'dap'.step_over)
+vim.keymap.set('n', '<F7>', require 'dap'.step_into)
+vim.keymap.set('n', '<F8>', require 'dap'.step_out)
+vim.keymap.set('n', '<F9>', require 'dap'.clear_breakpoints)
+
+
 require("dap-vscode-js").setup {
   node_path = "node",
-  debugger_path = vim.fn.stdpath "data" .. "/mason/packages/js-debug-adapter",
+  debugger_path = mason_path .. "packages/js-debug-adapter",
   debugger_cmd = { "js-debug-adapter" },
   adapters = { "pwa-node", "pwa-chrome", "pwa-msedge", "node-terminal", "pwa-extensionHost" },
 }
@@ -47,7 +55,6 @@ dap.configurations.javascript = {
   },
 }
 
-local mason_path = vim.fn.glob(vim.fn.stdpath "data" .. "/mason/")
 pcall(function()
   require("dap-python").setup(mason_path .. "packages/debugpy/venv/bin/python")
 end)
@@ -89,14 +96,15 @@ lvim.builtin.treesitter.ensure_installed = {
 }
 
 -- Formatters and Linters
+lvim.format_on_save.enabled = true
+
 local formatters = require "lvim.lsp.null-ls.formatters"
 formatters.setup {
-  { name = "black",   args = { "--line-length", "150" } },
-  { name = "prettier" },
+  { name = "black", args = { "--line-length", "150" } },
   { name = "djlint" },
 
 }
-lvim.format_on_save.enabled = true
+
 lspconfig.tailwindcss.setup {}
 
 local linters = require "lvim.lsp.null-ls.linters"
@@ -109,7 +117,7 @@ capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 lspconfig.emmet_ls.setup({
   capabilities = capabilities,
-  filetypes = { "css", "eruby", "html", "htmldjango", "javascript", "javascriptreact", "less", "sass", "scss", "svelte",
+  filetypes = { "css", "html", "htmldjango",
     "pug",
     "typescriptreact", "vue" },
   init_options = {
@@ -124,9 +132,3 @@ lspconfig.emmet_ls.setup({
 -- Switching Between Buffers
 lvim.keys.normal_mode["L"] = ":bnext<cr>"
 lvim.keys.normal_mode["H"] = ":bprev<cr>"
-
-vim.list_extend(lvim.lsp.automatic_configuration.skipped_servers, { "html" })
-local opts = {
-  filetypes = { "html", "htmldjango" }
-}
-require("lvim.lsp.manager").setup("html", opts)
