@@ -14,6 +14,7 @@ lvim.builtin.terminal.open_mapping = "<C-t>"
 lvim.builtin.treesitter.ensure_installed = {
   "python",
   "javascript",
+  "typescript",
   "lua",
 }
 vim.opt.linebreak = true
