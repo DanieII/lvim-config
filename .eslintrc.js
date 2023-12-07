@@ -6,8 +6,13 @@ module.exports = {
   },
   extends: ["eslint:recommended"],
   parserOptions: {
-    ecmaVersion: 2021,
+    ecmaVersion: "latest",
     sourceType: "module",
   },
-  rules: {},
+  rules: {
+    "no-unused-vars": "off",
+    "no-console": "warn",
+    "no-const-assign": "warn",
+    eqeqeq: "warn",
+  },
 };
