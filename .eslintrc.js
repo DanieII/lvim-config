@@ -13,6 +13,7 @@ module.exports = {
     "no-unused-vars": "off",
     "no-console": "warn",
     "no-const-assign": "warn",
+    "react/prop-types": "off",
     eqeqeq: "warn",
   },
 };
